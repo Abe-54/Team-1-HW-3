@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -47,7 +48,12 @@ public class BasicMovement : MonoBehaviour
         movement.y = verticalInput * moveSpeed;
 
         // Move the GameObject
-        transform.Translate(movement * Time.deltaTime);
+        // transform.Translate(movement * Time.deltaTime);
+    }
+
+    private void FixedUpdate()
+    {
+        myRigidbody2d.velocity = new Vector2(horizontalInput * moveSpeed, verticalInput * moveSpeed);
     }
 
 
