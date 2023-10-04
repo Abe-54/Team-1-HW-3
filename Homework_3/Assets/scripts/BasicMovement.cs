@@ -11,20 +11,19 @@ public class BasicMovement : MonoBehaviour
     public float verticalInput = 0;
 
     public Vector3 movement;
-
-    //3d rigidbody
-    public Rigidbody myRigidbody;
     
     //2d rigidbody
     public Rigidbody2D myRigidbody2d;
 
+    public bool canMove = false;
+    public GameObject playerLight;
 
     void Update()
     {
 
         horizontalInput = 0;
         verticalInput = 0;
-
+    
         if (Input.GetKey("left"))
         {
             horizontalInput -= 1;
@@ -44,11 +43,11 @@ public class BasicMovement : MonoBehaviour
             verticalInput -= 1;
         }
 
-        movement.x = horizontalInput * moveSpeed;
-        movement.y = verticalInput * moveSpeed;
-
-        // Move the GameObject
-        // transform.Translate(movement * Time.deltaTime);
+        if (canMove)
+        {
+            movement.x = horizontalInput * moveSpeed;
+            movement.y = verticalInput * moveSpeed;
+        }
     }
 
     private void FixedUpdate()
@@ -56,50 +55,13 @@ public class BasicMovement : MonoBehaviour
         myRigidbody2d.velocity = new Vector2(horizontalInput * moveSpeed, verticalInput * moveSpeed);
     }
 
-
-    public void PulseMovement() 
+    public void SetCanMove()
     {
-        myRigidbody.AddForce(new Vector3(1, 1), ForceMode.Force);
-
-        myRigidbody.velocity = new Vector3(1, 1);
-    
+        canMove = true;
     }
 
-    public void OnCollisionEnter(Collision collision)
+    public void TurnOnPlayerLight()
     {
-        
+        playerLight.SetActive(true);
     }
-
-
-    public void OnCollisionEnter2D(Collision2D collision)
-    {
-        
-    }
-
-    public void OnCollisionExit2D(Collision2D collision)
-    {
-        
-    }
-
-    public void OnCollisionStay2D(Collision2D collision)
-    {
-        
-    }
-
-    public void OnTriggerEnter2D(Collider2D collision)
-    {
-        
-    }
-
-    public void OnTriggerExit2D(Collider2D collision)
-    {
-        
-    }
-
-
-    public void OnTriggerStay2D(Collider2D collision)
-    {
-        
-    }
-
 }
