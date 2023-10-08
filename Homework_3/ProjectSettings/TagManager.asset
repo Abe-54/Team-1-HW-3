@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - Confiner
+  - AnimationStarter
+  - Key
+  - Door
   layers:
   - Default
   - TransparentFX

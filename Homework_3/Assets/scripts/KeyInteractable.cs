@@ -1,14 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Playables;
 
-public class InteractableObject : MonoBehaviour
+public class KeyInteractable : BaseInteractable
 {
     // Start is called before the first frame update
     void Start()
     {
-
+        Debug.Log("KEY NAME: " + keyName);
     }
 
     // Update is called once per frame

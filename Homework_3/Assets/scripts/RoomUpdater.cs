@@ -19,12 +19,6 @@ public class RoomUpdater : MonoBehaviour
         vCamConfiner.m_BoundingShape2D = startingConfiner;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     public void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Confiner"))
@@ -32,11 +26,6 @@ public class RoomUpdater : MonoBehaviour
             vCamConfiner.m_BoundingShape2D = collision.GetComponent<PolygonCollider2D>();
             Debug.Log("ENTERED: " + collision.name);
         }
-    }
-
-    public void OnTriggerExit2D(Collider2D collision)
-    {
-
     }
 
 
