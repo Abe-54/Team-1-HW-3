@@ -31,4 +31,13 @@ public class PlayerInventoryLogic : MonoBehaviour
     {
         return keys.ContainsKey(keyName) && keys[keyName];
     }
+
+    // Remove a key from the player's inventory
+    public void RemoveKey(string keyName)
+    {
+        if (keys.ContainsKey(keyName))
+        {
+            keys[keyName] = false;
+        }
+    }
 }

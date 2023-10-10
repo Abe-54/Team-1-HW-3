@@ -48,34 +48,43 @@ public class PlayerInteractionLogic : MonoBehaviour
         switch (target.GetType().Name)
         {
             case nameof(KeyInteractable):
-                inventory.AddKey(target.keyName);
-                ui.UpdateKeyUI();
-                target.gameObject.SetActive(false);
-                StartCoroutine(ShowTextSequence(target.interactText, target));
+                HandleKeyInteraction((KeyInteractable)target);
                 break;
 
             case nameof(DoorInteractable):
-                DoorInteractable doorTarget = (DoorInteractable)target;
-                Debug.Log("INTERACTING WITH DOOR");
-
-                if (inventory.HasKey(target.keyName))
-                {
-                    Debug.Log("I HAVE THE KEY");
-                    Debug.Log("KEYS: " + inventory.keys.ToArray().ToString());
-                    doorTarget.gameObject.SetActive(false);
-
-                    StartCoroutine(ShowTextSequence(doorTarget.hasKeyText, doorTarget));
-                }
-                else
-                {
-                    Debug.Log("I DO NOT HAVE THE KEY");
-
-                    StartCoroutine(ShowTextSequence(doorTarget.interactText, doorTarget));
-                }
+                HandleDoorInteraction((DoorInteractable)target);
                 break;
         }
 
         targetObject = null;
+    }
+
+    private void HandleDoorInteraction(DoorInteractable doorTarget)
+    {
+        Debug.Log("INTERACTING WITH DOOR");
+
+        if (inventory.HasKey(doorTarget.keyName))
+        {
+            Debug.Log("I HAVE THE KEY");
+            Debug.Log("KEYS: " + inventory.keys.ToArray().ToString());
+            inventory.RemoveKey(doorTarget.keyName);
+            ui.RemoveKeyUI();
+            doorTarget.gameObject.SetActive(false);
+            StartCoroutine(ShowTextSequence(doorTarget.hasKeyText, doorTarget));
+        }
+        else
+        {
+            Debug.Log("I DO NOT HAVE THE KEY");
+            StartCoroutine(ShowTextSequence(doorTarget.interactText, doorTarget));
+        }
+    }
+
+    private void HandleKeyInteraction(KeyInteractable keyTarget)
+    {
+        inventory.AddKey(keyTarget.keyName);
+        ui.UpdateKeyUI(keyTarget);
+        keyTarget.gameObject.SetActive(false);
+        StartCoroutine(ShowTextSequence(keyTarget.interactText, keyTarget));
     }
 
     IEnumerator ShowTextSequence(List<string> textList, BaseInteractable target)

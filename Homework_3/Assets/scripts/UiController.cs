@@ -8,8 +8,8 @@ public class UiController : MonoBehaviour
 {
     public TextMeshProUGUI text;
 
-    public Image keySprite_1;
-    public Sprite fullKeySprite_1;
+    public Image inventorySlot;
+    public Image item;
 
     public void ShowDialog()
     {
@@ -26,9 +26,17 @@ public class UiController : MonoBehaviour
         text.text = newtext;
     }
 
-    public void UpdateKeyUI()
+    public void UpdateKeyUI(KeyInteractable key)
     {
-        keySprite_1.sprite = fullKeySprite_1;
-        keySprite_1.color = new Color(keySprite_1.color.r, keySprite_1.color.g, keySprite_1.color.b);
+        item.gameObject.SetActive(true);
+        item.sprite = key.GetComponent<SpriteRenderer>().sprite;
+        item.color = key.GetComponent<SpriteRenderer>().color;
+    }
+
+    public void RemoveKeyUI()
+    {
+        item.sprite = null;
+        item.color = Color.clear;
+        item.gameObject.SetActive(false);
     }
 }
