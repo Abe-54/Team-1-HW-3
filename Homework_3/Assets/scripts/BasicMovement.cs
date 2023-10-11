@@ -18,6 +18,8 @@ public class BasicMovement : MonoBehaviour
 
     public bool canMove = false;
 
+    public GameObject finishScreen;
+
 
     void Update()
     {
@@ -36,5 +38,14 @@ public class BasicMovement : MonoBehaviour
     {
         canMove = true;
         Debug.Log("PLAYER CAN NOW MOVE!");
+    }
+
+    private void OnTriggerEnter2D(Collider2D other) {
+        if(other.CompareTag("Finish")){
+            Debug.Log("Player has reached the end of the level!");
+            canMove = false;
+            myRigidbody2d.velocity = Vector2.zero;
+            finishScreen.SetActive(true);
+        }
     }
 }
