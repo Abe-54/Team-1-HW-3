@@ -24,6 +24,12 @@ public class PlayerInteractionLogic : MonoBehaviour
 
     private void Update()
     {
+        if (targetObject && canInteract)
+        {
+            ui.ShowDialog();
+            ui.ChangeLineTo("Press Space to interact");
+        }
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (targetObject)
@@ -43,7 +49,10 @@ public class PlayerInteractionLogic : MonoBehaviour
 
     void StartInteraction(BaseInteractable target)
     {
+        Debug.Log("INTERACTING WITH: " + target.name);
         movement.canMove = false;
+        movement.myRigidbody2d.velocity = Vector2.zero;
+        canInteract = false;
 
         switch (target.GetType().Name)
         {
@@ -54,9 +63,20 @@ public class PlayerInteractionLogic : MonoBehaviour
             case nameof(DoorInteractable):
                 HandleDoorInteraction((DoorInteractable)target);
                 break;
+
+            case nameof(InteractableObject):
+                HandleBasicInteraction((InteractableObject)target);
+                break;
         }
 
         targetObject = null;
+    }
+
+    private void HandleBasicInteraction(InteractableObject target)
+    {
+        Debug.Log("INTERACTING WITH OBJECT: " + target.name);
+
+        StartCoroutine(ShowTextSequence(target.interactText, target));
     }
 
     private void HandleDoorInteraction(DoorInteractable doorTarget)
@@ -142,6 +162,7 @@ public class PlayerInteractionLogic : MonoBehaviour
         {
             targetObject = null;
             canInteract = false;
+            ui.HideDialog();
         }
     }
 }

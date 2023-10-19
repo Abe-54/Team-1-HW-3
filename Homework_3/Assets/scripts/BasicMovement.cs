@@ -20,12 +20,36 @@ public class BasicMovement : MonoBehaviour
 
     public GameObject finishScreen;
 
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+
+    private void Awake()
+    {
+        myRigidbody2d = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
 
     void Update()
     {
 
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
+
+        animator.SetFloat("Horizontal", horizontalInput);
+        animator.SetFloat("Vertical", verticalInput);
+
+        animator.SetFloat("Magnitude", myRigidbody2d.velocity.magnitude);
+
+        if (horizontalInput > 0)
+        {
+            spriteRenderer.flipX = false;
+        }
+        else if (horizontalInput < 0)
+        {
+            spriteRenderer.flipX = true;
+        }
     }
 
     private void FixedUpdate()
@@ -40,12 +64,13 @@ public class BasicMovement : MonoBehaviour
         Debug.Log("PLAYER CAN NOW MOVE!");
     }
 
-    private void OnTriggerEnter2D(Collider2D other) {
-        if(other.CompareTag("Finish")){
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Finish"))
+        {
             Debug.Log("Player has reached the end of the level!");
             canMove = false;
             myRigidbody2d.velocity = Vector2.zero;
-            finishScreen.SetActive(true);
         }
     }
 }

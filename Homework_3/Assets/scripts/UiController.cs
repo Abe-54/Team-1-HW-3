@@ -30,13 +30,11 @@ public class UiController : MonoBehaviour
     {
         item.gameObject.SetActive(true);
         item.sprite = key.GetComponent<SpriteRenderer>().sprite;
-        item.color = key.GetComponent<SpriteRenderer>().color;
     }
 
     public void RemoveKeyUI()
     {
         item.sprite = null;
-        item.color = Color.clear;
         item.gameObject.SetActive(false);
     }
 }

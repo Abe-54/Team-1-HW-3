@@ -14,12 +14,14 @@ public class CustsceneSignalsLogic : MonoBehaviour
     public PlayableDirector playableDirector;
     public bool isPaused = false;
 
+    public BearAnimationLogic bearAnimationLogic;
     private void Update()
     {
         if (isPaused && Input.GetKeyDown(KeyCode.Space))
         {
             HideText();
             playableDirector.playableGraph.GetRootPlayable(0).SetSpeed(1);
+            bearAnimationLogic.SetIsWaving(false);
             isPaused = false;
         }
     }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 
-public class InteractableObject : MonoBehaviour
+public class InteractableObject : BaseInteractable
 {
     // Start is called before the first frame update
     void Start()
