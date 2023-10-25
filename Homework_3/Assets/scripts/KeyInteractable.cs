@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class KeyInteractable : BaseInteractable
+public class KeyInteractable : MonoBehaviour
 {
+    public string keyName;
+    public List<string> interactText;
 
     // Start is called before the first frame update
     void Start()

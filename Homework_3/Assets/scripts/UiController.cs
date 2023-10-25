@@ -13,6 +13,7 @@ public class UiController : MonoBehaviour
 
     public void ShowDialog()
     {
+        Debug.Log("Showing dialog");
         text.gameObject.SetActive(true);
     }
 

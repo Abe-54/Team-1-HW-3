@@ -58,12 +58,6 @@ public class BasicMovement : MonoBehaviour
         myRigidbody2d.velocity = new Vector2(horizontalInput * moveSpeed, verticalInput * moveSpeed);
     }
 
-    public void SetCanMove()
-    {
-        canMove = true;
-        Debug.Log("PLAYER CAN NOW MOVE!");
-    }
-
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Finish"))

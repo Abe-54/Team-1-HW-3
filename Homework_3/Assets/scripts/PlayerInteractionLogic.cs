@@ -1,168 +1,163 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Playables;
 
 public class PlayerInteractionLogic : MonoBehaviour
 {
-    public bool canInteract;
-    public BaseInteractable targetObject;
+    [Header("Player Components")]
     public BasicMovement movement;
     public PlayerInventoryLogic inventory;
     public UiController ui;
+
+    [Header("Interaction Status")]
+    public bool canInteract;
+
+    [Header("Target Objects")]
+    public KeyInteractable keyTarget;
+    public DoorInteractable doorTarget;
+    public InteractableObject objectTarget;
+
+    [Header("Cutscene Configuration")]
     public bool[] cutscenePlayed;
     public int currentCutscene = 0;
 
-    private void Awake()
+    private float dialogDelay = 0.1f;
+    private float inputDebounceTime = 0.2f;
+
+    void Awake()
     {
         movement = GetComponent<BasicMovement>();
         inventory = GetComponent<PlayerInventoryLogic>();
         ui = FindObjectOfType<UiController>();
     }
 
-    private void Update()
+    void Update()
     {
-        if (targetObject && canInteract)
-        {
-            ui.ShowDialog();
-            ui.ChangeLineTo("Press Space to interact");
-        }
+        HandleInteraction();
+    }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+    void HandleInteraction()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && canInteract)
         {
-            if (targetObject)
-            {
-                ui.ShowDialog();
-
-                StartInteraction(targetObject);
-            }
-            else
-            {
-                ui.HideDialog();
-                movement.canMove = true;
-            }
+            if (keyTarget) StartKeyInteraction(keyTarget);
+            else if (doorTarget) StartDoorInteraction(doorTarget);
+            else if (objectTarget) StartBasicInteraction(objectTarget);
         }
     }
 
-
-    void StartInteraction(BaseInteractable target)
+    void StartDoorInteraction(DoorInteractable target)
     {
-        Debug.Log("INTERACTING WITH: " + target.name);
-        movement.canMove = false;
-        movement.myRigidbody2d.velocity = Vector2.zero;
-        canInteract = false;
-
-        switch (target.GetType().Name)
-        {
-            case nameof(KeyInteractable):
-                HandleKeyInteraction((KeyInteractable)target);
-                break;
-
-            case nameof(DoorInteractable):
-                HandleDoorInteraction((DoorInteractable)target);
-                break;
-
-            case nameof(InteractableObject):
-                HandleBasicInteraction((InteractableObject)target);
-                break;
-        }
-
-        targetObject = null;
-    }
-
-    private void HandleBasicInteraction(InteractableObject target)
-    {
-        Debug.Log("INTERACTING WITH OBJECT: " + target.name);
-
-        StartCoroutine(ShowTextSequence(target.interactText, target));
-    }
-
-    private void HandleDoorInteraction(DoorInteractable doorTarget)
-    {
-        Debug.Log("INTERACTING WITH DOOR");
-
+        DisableMovement();
         if (inventory.HasKey(doorTarget.keyName))
         {
-            Debug.Log("I HAVE THE KEY");
-            Debug.Log("KEYS: " + inventory.keys.ToArray().ToString());
             inventory.RemoveKey(doorTarget.keyName);
             ui.RemoveKeyUI();
-            doorTarget.gameObject.SetActive(false);
-            StartCoroutine(ShowTextSequence(doorTarget.hasKeyText, doorTarget));
+            target.gameObject.SetActive(false);
+            StartCoroutine(ShowTextSequence(doorTarget.hasKeyText));
         }
         else
         {
-            Debug.Log("I DO NOT HAVE THE KEY");
-            StartCoroutine(ShowTextSequence(doorTarget.interactText, doorTarget));
+            StartCoroutine(ShowTextSequence(target.interactText, () =>
+            {
+                PlayCutsceneIfAvailable(doorTarget.cutsceneDirector);
+            }));
         }
     }
 
-    private void HandleKeyInteraction(KeyInteractable keyTarget)
+    void PlayCutsceneIfAvailable(PlayableDirector director)
     {
-        inventory.AddKey(keyTarget.keyName);
-        ui.UpdateKeyUI(keyTarget);
-        keyTarget.gameObject.SetActive(false);
-        StartCoroutine(ShowTextSequence(keyTarget.interactText, keyTarget));
+        if (director != null && !cutscenePlayed[currentCutscene])
+        {
+            DisableMovement();
+            director.Play();
+            StartCoroutine(WaitForCutscene(director));
+        }
     }
 
-    IEnumerator ShowTextSequence(List<string> textList, BaseInteractable target)
+    void StartBasicInteraction(InteractableObject target)
     {
-        int currentText = 0;
+        DisableMovement();
+        StartCoroutine(ShowTextSequence(target.interactText));
+    }
 
-        while (currentText < textList.Count)
+    void StartKeyInteraction(KeyInteractable target)
+    {
+        DisableMovement();
+        inventory.AddKey(target.keyName);
+        ui.UpdateKeyUI(target);
+        target.gameObject.SetActive(false);
+        StartCoroutine(ShowTextSequence(target.interactText));
+    }
+
+    IEnumerator ShowTextSequence(List<string> textList, Action onComplete = null)
+    {
+        DisableMovement();
+        for (int i = 0; i < textList.Count; i++)
         {
             ui.ShowDialog();
-            ui.ChangeLineTo(textList[currentText]);
-
-            yield return new WaitForSeconds(0.1f);
-
-            while (!Input.GetKeyDown(KeyCode.Space))
-            {
-                yield return null;
-            }
-
-            currentText++;
+            ui.ChangeLineTo(textList[i]);
+            yield return new WaitForSeconds(dialogDelay);
+            yield return WaitForUserInput(KeyCode.Space);
+            yield return new WaitForSeconds(inputDebounceTime);
         }
 
         ui.HideDialog();
+        EnableMovement();
+        onComplete?.Invoke();
+    }
 
-
-        if (target.GetType().Name == nameof(DoorInteractable))
+    IEnumerator WaitForUserInput(KeyCode key)
+    {
+        while (!Input.GetKeyDown(key))
         {
-            DoorInteractable doorTarget = (DoorInteractable)target;
-            if (doorTarget.cutsceneDirector != null && !cutscenePlayed[currentCutscene])
-            {
-                Debug.Log("PLAYING CUTSCENE");
-                doorTarget.cutsceneDirector.Play();
-                yield return new WaitForSeconds((float)doorTarget.cutsceneDirector.duration);
-                doorTarget.cutsceneDirector.enabled = false;
-                cutscenePlayed[currentCutscene] = true;
-            }
+            yield return null;
         }
+    }
 
-
-        movement.canMove = true;
+    IEnumerator WaitForCutscene(PlayableDirector director)
+    {
+        yield return new WaitForSeconds((float)director.duration);
+        director.enabled = false;
+        cutscenePlayed[currentCutscene] = true;
+        EnableMovement();
     }
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.GetComponent<BaseInteractable>())
+        keyTarget = col.GetComponent<KeyInteractable>();
+        doorTarget = col.GetComponent<DoorInteractable>();
+        objectTarget = col.GetComponent<InteractableObject>();
+
+        if (keyTarget || doorTarget || objectTarget)
         {
-            targetObject = col.GetComponent<BaseInteractable>();
             canInteract = true;
         }
     }
 
-
-    public void OnTriggerExit2D(Collider2D col)
+    void OnTriggerExit2D(Collider2D col)
     {
-        if (col.GetComponent<BaseInteractable>())
+        if (col.GetComponent<KeyInteractable>() || col.GetComponent<DoorInteractable>() || col.GetComponent<InteractableObject>())
         {
-            targetObject = null;
+            keyTarget = null;
+            doorTarget = null;
+            objectTarget = null;
             canInteract = false;
             ui.HideDialog();
         }
+    }
+
+    void DisableMovement()
+    {
+        movement.canMove = false;
+        canInteract = false;
+        movement.myRigidbody2d.velocity = Vector2.zero;
+    }
+
+    void EnableMovement()
+    {
+        movement.canMove = true;
     }
 }

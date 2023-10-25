@@ -24,7 +24,7 @@ public class RoomUpdater : MonoBehaviour
         if (collision.CompareTag("Confiner"))
         {
             vCamConfiner.m_BoundingShape2D = collision.GetComponent<PolygonCollider2D>();
-            Debug.Log("ENTERED: " + collision.name);
+            // Debug.Log("ENTERED: " + collision.name);
         }
     }
 
@@ -34,7 +34,7 @@ public class RoomUpdater : MonoBehaviour
         if (collision.CompareTag("Confiner"))
         {
             vCamConfiner.m_BoundingShape2D = collision.GetComponent<PolygonCollider2D>();
-            Debug.Log("CURRENTLY IN: " + collision.name);
+            // Debug.Log("CURRENTLY IN: " + collision.name);
         }
     }
 }
