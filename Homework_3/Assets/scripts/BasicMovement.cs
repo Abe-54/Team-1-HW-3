@@ -3,9 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.UI;
 
 public class BasicMovement : MonoBehaviour
 {
+    public Transform spawnPoint;
+
+    public Image fadeImage;
+
     public float moveSpeed = 5f; // Adjust this to set the movement speed
 
     public float horizontalInput = 0;
@@ -13,12 +18,9 @@ public class BasicMovement : MonoBehaviour
 
     public Vector3 movement;
 
-    //2d rigidbody
     public Rigidbody2D myRigidbody2d;
 
     public bool canMove = false;
-
-    public GameObject finishScreen;
 
     private Animator animator;
     private SpriteRenderer spriteRenderer;
@@ -66,5 +68,15 @@ public class BasicMovement : MonoBehaviour
             canMove = false;
             myRigidbody2d.velocity = Vector2.zero;
         }
+    }
+
+    public IEnumerator Respawn()
+    {
+        canMove = false;
+        myRigidbody2d.velocity = Vector2.zero;
+        fadeImage.gameObject.SetActive(true);
+        fadeImage.CrossFadeAlpha(1, 1, false);
+        yield return new WaitForSeconds(1f);
+        transform.position = spawnPoint.position;
     }
 }

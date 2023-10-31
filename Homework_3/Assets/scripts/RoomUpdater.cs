@@ -19,22 +19,22 @@ public class RoomUpdater : MonoBehaviour
         vCamConfiner.m_BoundingShape2D = startingConfiner;
     }
 
-    public void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Confiner"))
-        {
-            vCamConfiner.m_BoundingShape2D = collision.GetComponent<PolygonCollider2D>();
-            // Debug.Log("ENTERED: " + collision.name);
-        }
-    }
+    // public void OnTriggerEnter2D(Collider2D collision)
+    // {
+    //     if (collision.CompareTag("Confiner"))
+    //     {
+    //         vCamConfiner.m_BoundingShape2D = collision.GetComponent<PolygonCollider2D>();
+    //         // Debug.Log("ENTERED: " + collision.name);
+    //     }
+    // }
 
 
-    public void OnTriggerStay2D(Collider2D collision)
+    public void OnTriggerStay2D(Collider2D other)
     {
-        if (collision.CompareTag("Confiner"))
+        if (other.CompareTag("Confiner"))
         {
-            vCamConfiner.m_BoundingShape2D = collision.GetComponent<PolygonCollider2D>();
-            // Debug.Log("CURRENTLY IN: " + collision.name);
+            vCamConfiner.m_BoundingShape2D = other.GetComponent<PolygonCollider2D>();
+            Debug.Log("CURRENTLY IN: " + other.name);
         }
     }
 }

@@ -11,6 +11,9 @@ public class PlayerInteractionLogic : MonoBehaviour
     public PlayerInventoryLogic inventory;
     public UiController ui;
 
+    [Header("Flashlight")]
+    public FlashlightController flashlight;
+
     [Header("Interaction Status")]
     public bool canInteract;
 
@@ -18,6 +21,7 @@ public class PlayerInteractionLogic : MonoBehaviour
     public KeyInteractable keyTarget;
     public DoorInteractable doorTarget;
     public InteractableObject objectTarget;
+    public FlashlightObject flashlightTarget;
 
     [Header("Cutscene Configuration")]
     public bool[] cutscenePlayed;
@@ -25,11 +29,14 @@ public class PlayerInteractionLogic : MonoBehaviour
 
     private float dialogDelay = 0.1f;
     private float inputDebounceTime = 0.2f;
+    public bool isShowingDialogue = false;
+
 
     void Awake()
     {
         movement = GetComponent<BasicMovement>();
         inventory = GetComponent<PlayerInventoryLogic>();
+        flashlight = GetComponent<FlashlightController>();
         ui = FindObjectOfType<UiController>();
     }
 
@@ -40,12 +47,33 @@ public class PlayerInteractionLogic : MonoBehaviour
 
     void HandleInteraction()
     {
+        if (canInteract && !isShowingDialogue)
+        {
+            ui.ChangeLineTo("Press Space to interact");
+            ui.ShowDialog();
+        }
+        else if (!isShowingDialogue) { ui.HideDialog(); }
+
         if (Input.GetKeyDown(KeyCode.Space) && canInteract)
         {
+            isShowingDialogue = true;
+
             if (keyTarget) StartKeyInteraction(keyTarget);
             else if (doorTarget) StartDoorInteraction(doorTarget);
             else if (objectTarget) StartBasicInteraction(objectTarget);
+            else if (flashlightTarget) StartFlashlightInteraction(flashlightTarget);
         }
+    }
+
+    private void StartFlashlightInteraction(FlashlightObject flashlightTarget)
+    {
+        DisableMovement();
+        ui.UpdateInventoryUI(flashlightTarget.GetComponent<SpriteRenderer>().sprite, Vector3.zero);
+        StartCoroutine(ShowTextSequence(flashlightTarget.interactText, () =>
+        {
+            flashlightTarget.gameObject.SetActive(false);
+            flashlight.PickUpFlashlight();
+        }));
     }
 
     void StartDoorInteraction(DoorInteractable target)
@@ -55,8 +83,11 @@ public class PlayerInteractionLogic : MonoBehaviour
         {
             inventory.RemoveKey(doorTarget.keyName);
             ui.RemoveKeyUI();
-            target.gameObject.SetActive(false);
-            StartCoroutine(ShowTextSequence(doorTarget.hasKeyText));
+            doorTarget.doorOpening.Play();
+            StartCoroutine(ShowTextSequence(doorTarget.hasKeyText, () =>
+            {
+                target.gameObject.SetActive(false);
+            }));
         }
         else
         {
@@ -87,7 +118,7 @@ public class PlayerInteractionLogic : MonoBehaviour
     {
         DisableMovement();
         inventory.AddKey(target.keyName);
-        ui.UpdateKeyUI(target);
+        ui.UpdateInventoryUI(target.GetComponent<SpriteRenderer>().sprite, new Vector3(0, 0, 90));
         target.gameObject.SetActive(false);
         StartCoroutine(ShowTextSequence(target.interactText));
     }
@@ -106,6 +137,8 @@ public class PlayerInteractionLogic : MonoBehaviour
 
         ui.HideDialog();
         EnableMovement();
+
+        isShowingDialogue = false;
         onComplete?.Invoke();
     }
 
@@ -130,8 +163,9 @@ public class PlayerInteractionLogic : MonoBehaviour
         keyTarget = col.GetComponent<KeyInteractable>();
         doorTarget = col.GetComponent<DoorInteractable>();
         objectTarget = col.GetComponent<InteractableObject>();
+        flashlightTarget = col.GetComponent<FlashlightObject>();
 
-        if (keyTarget || doorTarget || objectTarget)
+        if (keyTarget || doorTarget || objectTarget || flashlightTarget)
         {
             canInteract = true;
         }
@@ -139,11 +173,12 @@ public class PlayerInteractionLogic : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D col)
     {
-        if (col.GetComponent<KeyInteractable>() || col.GetComponent<DoorInteractable>() || col.GetComponent<InteractableObject>())
+        if (col.GetComponent<KeyInteractable>() || col.GetComponent<DoorInteractable>() || col.GetComponent<InteractableObject>() || col.GetComponent<FlashlightObject>())
         {
             keyTarget = null;
             doorTarget = null;
             objectTarget = null;
+            flashlightTarget = null;
             canInteract = false;
             ui.HideDialog();
         }

@@ -9,4 +9,6 @@ public class DoorInteractable : MonoBehaviour
     public List<string> hasKeyText;
     public List<string> interactText;
     public PlayableDirector cutsceneDirector;
+
+    public AudioSource doorOpening;
 }
