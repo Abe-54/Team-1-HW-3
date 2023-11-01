@@ -6,9 +6,11 @@ public class KitchenTrigger : MonoBehaviour
 {
     public GameObject newKitchenDoor;
 
+    private BossRoomLogic bossRoomLogic;
+
     private void Start()
     {
-
+        bossRoomLogic = FindObjectOfType<BossRoomLogic>();
     }
 
     private void Update()
@@ -22,6 +24,8 @@ public class KitchenTrigger : MonoBehaviour
         {
             Debug.Log("Player entered kitchen, start waves");
             newKitchenDoor.SetActive(true);
+            bossRoomLogic.SpawnWave();
+            gameObject.SetActive(false);
         }
     }
 }

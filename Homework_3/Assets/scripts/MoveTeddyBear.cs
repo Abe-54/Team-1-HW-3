@@ -5,7 +5,9 @@ using UnityEngine;
 public class MoveTeddyBear : MonoBehaviour
 {
     public GameObject teddyBear;
+    public GameObject evilVase;
     public GameObject newPos;
+    public AudioSource floorCreak;
 
     public bool isTriggered = false;
 
@@ -16,6 +18,8 @@ public class MoveTeddyBear : MonoBehaviour
             Debug.Log("Teddy Bear Triggered");
             teddyBear.transform.position = newPos.transform.position;
             teddyBear.SetActive(true);
+            evilVase.SetActive(false);
+            floorCreak.Play();
             isTriggered = true;
         }
     }

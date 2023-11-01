@@ -6,30 +6,59 @@ public class GhostController : MonoBehaviour
 {
     public float health = 100;
     public float speed = 5f;
+    public bool shouldDropKey;
+    public GameObject keyPrefab;
 
     private float initialHealth;
 
-    public BasicMovement player;
+    public BasicMovement playerMovement;
+    public FlashlightController player;
+    public BossRoomLogic bossRoomLogic;
 
     private SpriteRenderer ghostSpriteRenderer;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        player = FindObjectOfType<BasicMovement>();
+        player = FindObjectOfType<FlashlightController>();
+        playerMovement = FindObjectOfType<BasicMovement>();
         ghostSpriteRenderer = GetComponent<SpriteRenderer>();
+        bossRoomLogic = FindObjectOfType<BossRoomLogic>();
         initialHealth = health;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Ghost moves towards player
-        transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+        if (player.hasFlashlight)
+        {
+            Vector2 currentPosition = transform.position;
+
+            transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+            Vector3 originalLocalScale = transform.localScale;
+
+
+            if (currentPosition.x < player.transform.position.x)
+            {
+                //flip the ghost game object to face the player
+                transform.localScale = new Vector3(-Mathf.Abs(originalLocalScale.x), originalLocalScale.y, originalLocalScale.z);
+            }
+            else if (currentPosition.x > player.transform.position.x)
+            {
+                transform.localScale = new Vector3(Mathf.Abs(originalLocalScale.x), originalLocalScale.y, originalLocalScale.z);
+            }
+        }
+
 
         //Ghost dies when health reaches 0
         if (health <= 0)
         {
+            bossRoomLogic.IncreaseGhostsKilled();
+
+            if (shouldDropKey)  // Add this condition
+            {
+                Instantiate(keyPrefab, transform.position, Quaternion.identity);
+            }
+
             Destroy(gameObject);
         }
 
@@ -40,10 +69,9 @@ public class GhostController : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         //Ghost dies when it collides with player
-        if (other.gameObject.tag == "Player")
+        if (other.gameObject.tag == "Player" && !playerMovement.isRespawning)
         {
-            //Fade to black then respawn the player outside the room
-            // StartCoroutine(player.Respawn());
+            playerMovement.KillPlayer();
         }
     }
 }

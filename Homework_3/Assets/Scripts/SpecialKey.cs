@@ -7,14 +7,14 @@ public class SpecialKey : MonoBehaviour
     private UiController ui;
     private PlayerInventoryLogic inventory;
     private SpriteRenderer spriteRenderer;
+    private FlashlightController flashlight;
     public string keyName;
-    public GameObject enemyToKill;
-
     // Start is called before the first frame update
     void Start()
     {
         inventory = FindObjectOfType<PlayerInventoryLogic>();
         ui = FindObjectOfType<UiController>();
+        flashlight = FindObjectOfType<FlashlightController>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
@@ -29,10 +29,10 @@ public class SpecialKey : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             inventory.AddKey(keyName);
-            ui.item.sprite = spriteRenderer.sprite;
+            ui.UpdateInventoryUI(spriteRenderer.sprite, new Vector3(0, 0, 90));
             ui.item.gameObject.SetActive(true);
-            enemyToKill.SetActive(false);
             gameObject.SetActive(false);
+            flashlight.hasFlashlight = false;
         }
     }
 }

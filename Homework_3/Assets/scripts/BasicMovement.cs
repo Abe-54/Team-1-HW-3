@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 public class BasicMovement : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject[] ghosts;
     public Transform spawnPoint;
 
     public Image fadeImage;
@@ -21,20 +23,25 @@ public class BasicMovement : MonoBehaviour
     public Rigidbody2D myRigidbody2d;
 
     public bool canMove = false;
+    public bool isRespawning = false;
 
     private Animator animator;
     private SpriteRenderer spriteRenderer;
+
+    private BossRoomLogic bossRoomLogic;
 
     private void Awake()
     {
         myRigidbody2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        bossRoomLogic = FindObjectOfType<BossRoomLogic>();
     }
 
 
     void Update()
     {
+        ghosts = GameObject.FindGameObjectsWithTag("Ghost");
 
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
@@ -72,11 +79,39 @@ public class BasicMovement : MonoBehaviour
 
     public IEnumerator Respawn()
     {
+        isRespawning = true;
+        Debug.Log("Respawn coroutine started");
+
         canMove = false;
         myRigidbody2d.velocity = Vector2.zero;
+
         fadeImage.gameObject.SetActive(true);
-        fadeImage.CrossFadeAlpha(1, 1, false);
+        fadeImage.canvasRenderer.SetAlpha(0.0f);
+
+        fadeImage.CrossFadeAlpha(1, 1f, false);
         yield return new WaitForSeconds(1f);
+
         transform.position = spawnPoint.position;
+        foreach (GameObject ghost in ghosts)
+        {
+            Destroy(ghost);
+        }
+        bossRoomLogic.ResetWaves();
+        fadeImage.CrossFadeAlpha(0, 0.5f, false);
+
+        yield return new WaitForSeconds(0.5f);
+        fadeImage.gameObject.SetActive(false);
+
+        spawnPoint.gameObject.SetActive(true);
+        canMove = true;
+
+        Debug.Log("Respawn coroutine ended");
+        isRespawning = false;
     }
+
+    public void KillPlayer()
+    {
+        StartCoroutine(Respawn());
+    }
+
 }
